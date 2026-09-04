@@ -14,48 +14,31 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
+
     private final UsuarioService usuarioService;
-
-    public UsuarioController(UsuarioService usuarioService) {
-
+    public UsuarioController(UsuarioService usuarioService){
         this.usuarioService = usuarioService;
     }
 
     // GET - listar todos os usuários
     @GetMapping
     public ResponseEntity<List<Usuario>> listar() {
-        return ResponseEntity.ok().body(usuarioService.listar());
+        return ResponseEntity.ok(usuarioService.listar());
     }
-
-    // GET - buscar usuário por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Usuario> buscarPorId(@PathVariable Integer id) {
-        Optional<Usuario> usuario = usuarioService.buscarPorId(id);
-        return usuario.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    // GET - buscar usuário por índice
+    @GetMapping("/{indice}")
+    public ResponseEntity<Usuario> buscarPorIndice(@PathVariable int indice) {
+        Usuario usuario = usuarioService.buscarPorIndice(indice);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(usuario);
     }
-
+    // POST - adicionar usuário
     @PostMapping
-    public ResponseEntity<Usuario> salvar(@RequestBody Usuario usuario) {
-        Usuario novoUsuario = usuarioService.salvar(usuario);
-        return ResponseEntity.status(201).body(usuario);
-    }
+    public ResponseEntity<Usuario> adicionar(@RequestBody Usuario usuario) {
+        Usuario novoUsuario = usuarioService.adicionar(usuario);
 
-    @DeleteMapping("/id")
-    public ResponseEntity<Void> deletar(@RequestParam Integer id) {
-        if(usuarioService.buscarPorId(id).isPresent()) {
-            usuarioService.deletar(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(201).body(novoUsuario);
     }
-    @PutMapping
-    public ResponseEntity<Usuario> atualizar(@RequestParam Integer id,@RequestBody Usuario usuario) {
-        if(usuarioService.buscarPorId(id).isPresent()) {
-            usuarioService.atualizar(id, usuario);
-            return ResponseEntity.status(201).body(usuario);
-        }
-        return ResponseEntity.notFound().build();
-    }
-
 }
